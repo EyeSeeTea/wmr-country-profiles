@@ -66,7 +66,8 @@ export function DHIS2Provider({ children }: { children: ReactNode }) {
       
       dispatch({ type: 'CONNECT_SUCCESS', payload: user });
     } catch (error) {
-      dispatch({ type: 'CONNECT_ERROR', payload: error instanceof Error ? error.message : 'Connection failed' });
+      const errorMessage = error instanceof Error ? error.message : 'Connection failed';
+      dispatch({ type: 'CONNECT_ERROR', payload: errorMessage });
     } finally {
       setIsConnecting(false);
     }
@@ -107,14 +108,39 @@ export function DHIS2Provider({ children }: { children: ReactNode }) {
   // Auto-connect on mount
   useEffect(() => {
     const autoConnect = async () => {
-      // Use token authentication
       if (isProduction) {
-        console.log('Production mode detected - using DHIS2 session');
         await connectProduction();
         return;
       }
     
-      await connect(config);
+      // Development mode - using environment variables
+      let baseUrl = import.meta.env.VITE_DHIS2_BASE_URL || 'http://localhost:8080/dhis2';
+      const token = import.meta.env.VITE_DHIS2_TOKEN;
+      const username = import.meta.env.VITE_DHIS2_USERNAME;
+      const password = import.meta.env.VITE_DHIS2_PASSWORD;
+      
+      // Validate base URL - should NOT be the dev server URL
+      if (baseUrl.includes('localhost:5173') || baseUrl.includes('127.0.0.1:5173')) {
+        const errorMsg = 'ERROR: VITE_DHIS2_BASE_URL cannot be the Vite dev server URL (localhost:5173). Please set it to your DHIS2 instance URL (e.g., http://localhost:8080/dhis2)';
+        dispatch({ type: 'CONNECT_ERROR', payload: errorMsg });
+        return;
+      }
+      
+      // Remove trailing slash if present
+      baseUrl = baseUrl.replace(/\/$/, '');
+      
+      const devConfig: DHIS2Config = {
+        baseUrl,
+        ...(token ? { token } : username && password ? { username, password } : {})
+      };
+      
+      if (!token && !username) {
+        const errorMsg = 'DHIS2 credentials not configured. Please set VITE_DHIS2_TOKEN or VITE_DHIS2_USERNAME/VITE_DHIS2_PASSWORD in .env file and restart the dev server';
+        dispatch({ type: 'CONNECT_ERROR', payload: errorMsg });
+        return;
+      }
+      
+      await connect(devConfig);
     };
     
     autoConnect();

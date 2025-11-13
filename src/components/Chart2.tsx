@@ -75,9 +75,9 @@ export function Chart2({ orgUnit, period, chartId, setChartRef, chartSource }: C
       );
       
       // Process the data
-      const reportingData: number[] = [];
-      const careSeekingData: number[] = [];
-      const publicHFData: number[] = [];
+      const reportingData: (number | null)[] = [];
+      const careSeekingData: (number | null)[] = [];
+      const publicHFData: (number | null)[] = [];
       
       // Create data maps for each year
       years.forEach(year => {
@@ -87,7 +87,7 @@ export function Chart2({ orgUnit, period, chartId, setChartRef, chartSource }: C
         const reportingRow = analyticsData.rows.find(row => 
           row[0] === reportingCompletenessUID && row[2] === yearStr
         );
-        const rawReportingValue = reportingRow ? parseFloat(reportingRow[3]) || 0 : 0;
+        const rawReportingValue = reportingRow && reportingRow[3] ? parseFloat(reportingRow[3]) : null;
         const transformedReportingValue = dataTransformationService.transformValue(rawReportingValue, reportingCompletenessUID);
         reportingData.push(transformedReportingValue);
         
@@ -95,7 +95,7 @@ export function Chart2({ orgUnit, period, chartId, setChartRef, chartSource }: C
         const careSeekingRow = analyticsData.rows.find(row => 
           row[0] === careSeekingUID && row[2] === yearStr
         );
-        const rawCareSeekingValue = careSeekingRow ? parseFloat(careSeekingRow[3]) || 0 : 0;
+        const rawCareSeekingValue = careSeekingRow && careSeekingRow[3] ? parseFloat(careSeekingRow[3]) : null;
         const transformedCareSeekingValue = dataTransformationService.transformValue(rawCareSeekingValue, careSeekingUID);
         careSeekingData.push(transformedCareSeekingValue);
         
@@ -103,7 +103,7 @@ export function Chart2({ orgUnit, period, chartId, setChartRef, chartSource }: C
         const publicHFRow = analyticsData.rows.find(row => 
           row[0] === publicHFCareUID && row[2] === yearStr
         );
-        const rawPublicHFValue = publicHFRow ? parseFloat(publicHFRow[3]) || 0 : 0;
+        const rawPublicHFValue = publicHFRow && publicHFRow[3] ? parseFloat(publicHFRow[3]) : null;
         const transformedPublicHFValue = dataTransformationService.transformValue(rawPublicHFValue, publicHFCareUID);
         publicHFData.push(transformedPublicHFValue);
       });
@@ -239,7 +239,7 @@ export function Chart2({ orgUnit, period, chartId, setChartRef, chartSource }: C
           },
         },
         min: 0,
-        max: 100,
+        Max: 105,
       },
     },
     interaction: {

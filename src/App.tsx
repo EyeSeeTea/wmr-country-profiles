@@ -7,7 +7,7 @@ import { Country } from './types/dhis2';
 
 function AppContent() {
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
-  const [selectedYear, setSelectedYear] = useState<string>('2023');
+  const [selectedYear, setSelectedYear] = useState<string>('2024');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 print:bg-white print:shadow-none print:m-0 print:p-0 print-exact">

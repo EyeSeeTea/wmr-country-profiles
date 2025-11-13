@@ -111,10 +111,10 @@ export function Chart7({ orgUnit, countryCode, currentRegion, period, chartId, s
       
       if (isE2025Country) {
         // E2025 countries datasets
-        const atRiskITNData: number[] = [];
-        const atRiskIRSData: number[] = [];
-        const populationITNData: number[] = [];
-        const householdsITNData: number[] = [];
+        const atRiskITNData: (number | null)[] = [];
+        const atRiskIRSData: (number | null)[] = [];
+        const populationITNData: (number | null)[] = [];
+        const householdsITNData: (number | null)[] = [];
         
         years.forEach(year => {
           const yearStr = year.toString();
@@ -122,28 +122,28 @@ export function Chart7({ orgUnit, countryCode, currentRegion, period, chartId, s
           const atRiskITNRow = analyticsData.rows.find(row => 
             row[0] === 'bfRZJGS7KOh' && row[2] === yearStr
           );
-          const rawAtRiskITNValue = atRiskITNRow ? parseFloat(atRiskITNRow[3]) || 0 : 0;
+          const rawAtRiskITNValue = atRiskITNRow && atRiskITNRow[3] ? parseFloat(atRiskITNRow[3]) : null;
           const transformedAtRiskITNValue = dataTransformationService.transformValue(rawAtRiskITNValue, 'bfRZJGS7KOh');
           atRiskITNData.push(transformedAtRiskITNValue);
           
           const atRiskIRSRow = analyticsData.rows.find(row => 
             row[0] === 'niYxtlxx68s' && row[2] === yearStr
           );
-          const rawAtRiskIRSValue = atRiskIRSRow ? parseFloat(atRiskIRSRow[3]) || 0 : 0;
+          const rawAtRiskIRSValue = atRiskIRSRow && atRiskIRSRow[3] ? parseFloat(atRiskIRSRow[3]) : null;
           const transformedAtRiskIRSValue = dataTransformationService.transformValue(rawAtRiskIRSValue, 'niYxtlxx68s');
           atRiskIRSData.push(transformedAtRiskIRSValue);
           
           const populationITNRow = analyticsData.rows.find(row => 
             row[0] === 'SQWZ8POEhMI' && row[2] === yearStr
           );
-          const rawPopulationITNValue = populationITNRow ? parseFloat(populationITNRow[3]) || 0 : 0;
+          const rawPopulationITNValue = populationITNRow && populationITNRow[3] ? parseFloat(populationITNRow[3]) : null;
           const transformedPopulationITNValue = dataTransformationService.transformValue(rawPopulationITNValue, 'SQWZ8POEhMI');
           populationITNData.push(transformedPopulationITNValue);
           
           const householdsITNRow = analyticsData.rows.find(row => 
             row[0] === 'LSlfr3VzLCp' && row[2] === yearStr
           );
-          const rawHouseholdsITNValue = householdsITNRow ? parseFloat(householdsITNRow[3]) || 0 : 0;
+          const rawHouseholdsITNValue = householdsITNRow && householdsITNRow[3] ? parseFloat(householdsITNRow[3]) : null;
           const transformedHouseholdsITNValue = dataTransformationService.transformValue(rawHouseholdsITNValue, 'LSlfr3VzLCp');
           householdsITNData.push(transformedHouseholdsITNValue);
         });
@@ -197,10 +197,10 @@ export function Chart7({ orgUnit, countryCode, currentRegion, period, chartId, s
         );
       } else {
         // Non-E2025 countries datasets
-        const atRiskIRSData: number[] = [];
-        const populationITNData: number[] = [];
-        const householdsITNData: number[] = [];
-        let accessITNData: number[] = [];
+        const atRiskIRSData: (number | null)[] = [];
+        const populationITNData: (number | null)[] = [];
+        const householdsITNData: (number | null)[] = [];
+        let accessITNData: (number | null)[] = [];
         
         years.forEach(year => {
           const yearStr = year.toString();
@@ -209,7 +209,7 @@ export function Chart7({ orgUnit, countryCode, currentRegion, period, chartId, s
             const accessITNRow = analyticsData.rows.find(row => 
               row[0] === 'rVUHAOEXV67' && row[2] === yearStr
             );
-            const rawAccessITNValue = accessITNRow ? parseFloat(accessITNRow[3]) || 0 : 0;
+            const rawAccessITNValue = accessITNRow && accessITNRow[3] ? parseFloat(accessITNRow[3]) : null;
             const transformedAccessITNValue = dataTransformationService.transformValue(rawAccessITNValue, 'rVUHAOEXV67');
             accessITNData.push(transformedAccessITNValue);
           }
@@ -217,21 +217,21 @@ export function Chart7({ orgUnit, countryCode, currentRegion, period, chartId, s
           const atRiskIRSRow = analyticsData.rows.find(row => 
             row[0] === 'niYxtlxx68s' && row[2] === yearStr
           );
-          const rawAtRiskIRSValue = atRiskIRSRow ? parseFloat(atRiskIRSRow[3]) || 0 : 0;
+          const rawAtRiskIRSValue = atRiskIRSRow && atRiskIRSRow[3] ? parseFloat(atRiskIRSRow[3]) : null;
           const transformedAtRiskIRSValue = dataTransformationService.transformValue(rawAtRiskIRSValue, 'niYxtlxx68s');
           atRiskIRSData.push(transformedAtRiskIRSValue);
           
           const populationITNRow = analyticsData.rows.find(row => 
             row[0] === 'SQWZ8POEhMI' && row[2] === yearStr
           );
-          const rawPopulationITNValue = populationITNRow ? parseFloat(populationITNRow[3]) || 0 : 0;
+          const rawPopulationITNValue = populationITNRow && populationITNRow[3] ? parseFloat(populationITNRow[3]) : null;
           const transformedPopulationITNValue = dataTransformationService.transformValue(rawPopulationITNValue, 'SQWZ8POEhMI');
           populationITNData.push(transformedPopulationITNValue);
           
           const householdsITNRow = analyticsData.rows.find(row => 
             row[0] === 'LSlfr3VzLCp' && row[2] === yearStr
           );
-          const rawHouseholdsITNValue = householdsITNRow ? parseFloat(householdsITNRow[3]) || 0 : 0;
+          const rawHouseholdsITNValue = householdsITNRow && householdsITNRow[3] ? parseFloat(householdsITNRow[3]) : null;
           const transformedHouseholdsITNValue = dataTransformationService.transformValue(rawHouseholdsITNValue, 'LSlfr3VzLCp');
           householdsITNData.push(transformedHouseholdsITNValue);
         });

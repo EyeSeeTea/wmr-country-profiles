@@ -71,10 +71,10 @@ export function Chart4({ orgUnit, period, chartId, setChartRef, chartSource }: C
       );
       
       // Process the data
-      const slidePositivityData: number[] = [];
-      const rdtPositivityData: number[] = [];
-      const surveyMicroscopyData: number[] = [];
-      const surveyRdtData: number[] = [];
+      const slidePositivityData: (number | null)[] = [];
+      const rdtPositivityData: (number | null)[] = [];
+      const surveyMicroscopyData: (number | null)[] = [];
+      const surveyRdtData: (number | null)[] = [];
       
       // Create data maps for each year
       years.forEach(year => {
@@ -84,7 +84,7 @@ export function Chart4({ orgUnit, period, chartId, setChartRef, chartSource }: C
         const slideRow = analyticsData.rows.find(row => 
           row[0] === slidePositivityUID && row[2] === yearStr
         );
-        const rawSlideValue = slideRow ? parseFloat(slideRow[3]) || 0 : 0;
+        const rawSlideValue = slideRow && slideRow[3] ? parseFloat(slideRow[3]) : null;
         const transformedSlideValue = dataTransformationService.transformValue(rawSlideValue, slidePositivityUID);
         slidePositivityData.push(transformedSlideValue);
         
@@ -92,7 +92,7 @@ export function Chart4({ orgUnit, period, chartId, setChartRef, chartSource }: C
         const rdtRow = analyticsData.rows.find(row => 
           row[0] === rdtPositivityUID && row[2] === yearStr
         );
-        const rawRdtValue = rdtRow ? parseFloat(rdtRow[3]) || 0 : 0;
+        const rawRdtValue = rdtRow && rdtRow[3] ? parseFloat(rdtRow[3]) : null;
         const transformedRdtValue = dataTransformationService.transformValue(rawRdtValue, rdtPositivityUID);
         rdtPositivityData.push(transformedRdtValue);
         
@@ -100,7 +100,7 @@ export function Chart4({ orgUnit, period, chartId, setChartRef, chartSource }: C
         const surveyMicroscopyRow = analyticsData.rows.find(row => 
           row[0] === surveyMicroscopyUID && row[2] === yearStr
         );
-        const rawSurveyMicroscopyValue = surveyMicroscopyRow ? parseFloat(surveyMicroscopyRow[3]) || 0 : 0;
+        const rawSurveyMicroscopyValue = surveyMicroscopyRow && surveyMicroscopyRow[3] ? parseFloat(surveyMicroscopyRow[3]) : null;
         const transformedSurveyMicroscopyValue = dataTransformationService.transformValue(rawSurveyMicroscopyValue, surveyMicroscopyUID);
         surveyMicroscopyData.push(transformedSurveyMicroscopyValue);
         
@@ -108,7 +108,7 @@ export function Chart4({ orgUnit, period, chartId, setChartRef, chartSource }: C
         const surveyRdtRow = analyticsData.rows.find(row => 
           row[0] === surveyRdtUID && row[2] === yearStr
         );
-        const rawSurveyRdtValue = surveyRdtRow ? parseFloat(surveyRdtRow[3]) || 0 : 0;
+        const rawSurveyRdtValue = surveyRdtRow && surveyRdtRow[3] ? parseFloat(surveyRdtRow[3]) : null;
         const transformedSurveyRdtValue = dataTransformationService.transformValue(rawSurveyRdtValue, surveyRdtUID);
         surveyRdtData.push(transformedSurveyRdtValue);
       });
@@ -259,7 +259,7 @@ export function Chart4({ orgUnit, period, chartId, setChartRef, chartSource }: C
           },
         },
         min: 0,
-        max: 100,
+        max: 105,
         beginAtZero: true,
       },
     },

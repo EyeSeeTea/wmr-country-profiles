@@ -1,10 +1,5 @@
 #!/usr/bin/env node
 
-/**
- * Clean Credentials Script
- * Automatically removes development credentials from DHIS2Context.tsx for production builds
- */
-
 import fs from 'fs';
 import path from 'path';
 

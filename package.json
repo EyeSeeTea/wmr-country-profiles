@@ -8,6 +8,7 @@
     "build": "vite build",
     "build:production": "node scripts/build-production.js",
     "build:clean": "node scripts/clean-credentials.js && vite build",
+    "dist": "node scripts/create-distribution.js",
     "lint": "eslint .",
     "preview": "vite preview"
   },

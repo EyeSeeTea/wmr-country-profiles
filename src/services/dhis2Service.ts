@@ -85,8 +85,10 @@ class DHIS2Service {
       throw new Error('DHIS2 not configured');
     }
 
+    const apiUrl = `${this.config.baseUrl}/api/me`;
+
     try {
-      const response = await fetch(`${this.config.baseUrl}/api/me`, {
+      const response = await fetch(apiUrl, {
         headers: this.isProduction ? {
           'Content-Type': 'application/json',
         } : {
@@ -99,7 +101,30 @@ class DHIS2Service {
       });
 
       if (!response.ok) {
-        throw new Error(`Authentication failed: ${response.status} ${response.statusText}`);
+        // Try to get error details
+        const contentType = response.headers.get('content-type');
+        let errorMessage = `Authentication failed: ${response.status} ${response.statusText}`;
+        
+        if (contentType && contentType.includes('application/json')) {
+          try {
+            const errorData = await response.json();
+            errorMessage += ` - ${JSON.stringify(errorData)}`;
+          } catch (e) {
+            // Ignore JSON parse error
+          }
+        } else {
+          // If it's HTML, get the text to see what we got
+          const text = await response.text();
+          errorMessage += ` - Server returned HTML instead of JSON. Check if the base URL is correct. Expected: ${apiUrl}`;
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        throw new Error(`Server returned ${contentType || 'unknown content type'} instead of JSON. Check if the base URL is correct: ${apiUrl}`);
       }
 
       const userData = await response.json();
@@ -109,6 +134,9 @@ class DHIS2Service {
         username: userData.username || this.config.username || 'token-user',
       };
     } catch (error) {
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error(`Network error: ${error.message}. Check if the DHIS2 base URL is correct and CORS is enabled. URL attempted: ${apiUrl}`);
+      }
       throw error;
     }
   }

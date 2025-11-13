@@ -16,7 +16,7 @@ export function CountrySelector({ selectedCountry, onCountrySelect, selectedYear
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isOpen, setIsOpen] = useState(false);
-  const { isAuthenticated } = useDHIS2();
+  const { isAuthenticated, isProduction } = useDHIS2();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -49,28 +49,30 @@ export function CountrySelector({ selectedCountry, onCountrySelect, selectedYear
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6 country-selector print:hidden avoid-break">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Year Selector */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            Select Year
-          </label>
-          <div className="flex bg-gray-100 rounded-lg p-1">
-            {years.map((year) => (
-              <button
-                key={year.value}
-                onClick={() => onYearSelect(year.value)}
-                className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all ${
-                  selectedYear === year.value
-                    ? 'bg-blue-500 text-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'
-                }`}
-              >
-                {year.display}
-              </button>
-            ))}
+      <div className={`grid gap-6 ${!isProduction ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
+        {/* Year Selector - Only show in development mode */}
+        {!isProduction && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Select Year
+            </label>
+            <div className="flex bg-gray-100 rounded-lg p-1">
+              {years.map((year) => (
+                <button
+                  key={year.value}
+                  onClick={() => onYearSelect(year.value)}
+                  className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                    selectedYear === year.value
+                      ? 'bg-blue-500 text-white shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'
+                  }`}
+                >
+                  {year.display}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Country Selector */}
         <div className="relative">

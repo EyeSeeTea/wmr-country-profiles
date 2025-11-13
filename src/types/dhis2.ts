@@ -71,11 +71,16 @@ export interface ParasiteData {
 
 export interface CasesData {
   totalCases: number;
+  totalConfirmedCases: number;
+  reportedIndigenousConfirmedCases: number;
   confirmedHealthFacility: number;
   confirmedCommunity: number;
   confirmedPrivateSector: number;
+  reportedDeaths: number;
   indigenousDeaths: number;
-  isIndigCountry: boolean;
+  paramEpiDisplay: number;
+  footnoteText: string | null;
+  indigSource: number; // Keep for charts
 }
 
 export interface EstimatesData {
@@ -115,9 +120,9 @@ export interface TherapeuticEfficacyData {
 export interface ResistanceStatusData {
   insecticideClass: string;
   years: string;
-  sitesPct: number | null;
+  sites: number | null;
   vectors: string;
-  used: string;
+  used: boolean | null;
 }
 
 export interface CountryProfileData {

@@ -38,21 +38,21 @@ interface Chart1Props {
   orgUnit: string;
   period: string;
   showEstimates: boolean;
-  indigSource: number;
+  paramEpiDisplay: number;
   showEstForIndigCountry: boolean;
   chartId: string;
   setChartRef?: (id: string, ref: ChartRefLike) => void;
   chartSource?: string;
 }
 
-export function Chart1({ orgUnit, period, showEstimates, indigSource, showEstForIndigCountry, chartId, setChartRef, chartSource }: Chart1Props) {
+export function Chart1({ orgUnit, period, showEstimates, paramEpiDisplay, showEstForIndigCountry, chartId, setChartRef, chartSource }: Chart1Props) {
   const [chartData, setChartData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadChartData();
-  }, [orgUnit, period, showEstimates, indigSource]);
+  }, [orgUnit, period, showEstimates, paramEpiDisplay]);
 
   const loadChartData = async () => {
     setLoading(true);
@@ -68,15 +68,12 @@ export function Chart1({ orgUnit, period, showEstimates, indigSource, showEstFor
       let surfaceAreaUID: string;
       let lineUID: string;
       
-      if (showEstForIndigCountry) {
-        surfaceAreaUID = 'Y9aXt5gc808'; // Confirmed indigenous
-        lineUID = 'gyAhkgE9tlU'; // Indigenous malaria cases
-      } else if (indigSource === 1) {
-        surfaceAreaUID = 'an08m0ybMb1'; // Estimated cases
-        lineUID = 'gyAhkgE9tlU'; // Indigenous malaria cases
-      } else {
+      if (paramEpiDisplay === 1) {
         surfaceAreaUID = 'an08m0ybMb1'; // Estimated cases
         lineUID = 'TfL9cVeMHyd'; // Confirmed cases
+      } else {
+        surfaceAreaUID = 'an08m0ybMb1'; // Estimated cases
+        lineUID = 'gyAhkgE9tlU'; // Indigenous malaria cases
       }
       
       // Fetch data for all years
@@ -90,8 +87,8 @@ export function Chart1({ orgUnit, period, showEstimates, indigSource, showEstFor
       );
       
       // Process the data
-      const surfaceAreaData: number[] = [];
-      const lineData: number[] = [];
+      const surfaceAreaData: (number | null)[] = [];
+      const lineData: (number | null)[] = [];
       
       // Create data maps for each year
       years.forEach(year => {
@@ -101,31 +98,27 @@ export function Chart1({ orgUnit, period, showEstimates, indigSource, showEstFor
         const surfaceRow = analyticsData.rows.find(row => 
           row[0] === surfaceAreaUID && row[2] === yearStr
         );
-        const surfaceValue = surfaceRow ? parseFloat(surfaceRow[3]) || 0 : 0;
+        const surfaceValue = surfaceRow && surfaceRow[3] ? parseFloat(surfaceRow[3]) : null;
         surfaceAreaData.push(surfaceValue);
         
         // Find line data for this year
         const lineRow = analyticsData.rows.find(row => 
           row[0] === lineUID && row[2] === yearStr
         );
-        const lineValue = lineRow ? parseFloat(lineRow[3]) || 0 : 0;
+        const lineValue = lineRow && lineRow[3] ? parseFloat(lineRow[3]) : null;
         lineData.push(lineValue);
       });
       
       // Determine labels based on conditions
       let surfaceLabel: string;
       let lineLabel: string;
-      
-      if (showEstForIndigCountry) {
-        surfaceLabel = 'Confirmed indigenous';
-        lineLabel = 'Indigenous malaria cases';
-      } else if (indigSource === 1) {
+      if (paramEpiDisplay === 1) {
         surfaceLabel = 'Estimated cases';
-        lineLabel = 'Indigenous malaria cases';
+        lineLabel = 'Confirmed cases (reported)';
       } else {
         surfaceLabel = 'Estimated cases';
-        lineLabel = 'Confirmed cases';
-      }
+        lineLabel = 'Indigenous cases (reported)';
+      } 
       
       const data = {
         labels: years,

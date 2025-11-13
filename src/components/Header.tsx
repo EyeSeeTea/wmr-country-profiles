@@ -4,7 +4,7 @@ import { useDHIS2 } from '../context/DHIS2Context';
 
 export function Header() {
   const { isAuthenticated, user, goHome, isLoading, error, disconnect, isProduction } = useDHIS2();
-  const isDebug = false; // Set to true to show connection status and user info
+  const isDebug = !isProduction; // Show connection status in development mode
 
   const getConnectionStatus = () => {
     if (isLoading) return { icon: Wifi, text: 'Connecting...', color: 'text-yellow-500' };
@@ -34,11 +34,18 @@ export function Header() {
           {isDebug && (
             <div className="flex items-center space-x-4 print:hidden">
               {/* Connection Status */}
-              <div className="flex items-center space-x-2">
-                <StatusIcon className={`h-4 w-4 ${status.color}`} />
-                <span className={`text-sm font-medium ${status.color}`}>
-                  {status.text}
-                </span>
+              <div className="flex flex-col items-end">
+                <div className="flex items-center space-x-2">
+                  <StatusIcon className={`h-4 w-4 ${status.color}`} />
+                  <span className={`text-sm font-medium ${status.color}`}>
+                    {status.text}
+                  </span>
+                </div>
+                {error && (
+                  <span className="text-xs text-red-600 mt-1 max-w-xs truncate" title={error}>
+                    {error}
+                  </span>
+                )}
               </div>
 
               {/* User Info and Actions */}

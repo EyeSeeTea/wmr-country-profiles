@@ -100,11 +100,11 @@ export function Chart6({ orgUnit, countryCode, period, chartId, setChartRef, cha
       
       if (isE2025Country) {
         // E2025 countries datasets
-        const importedCasesData: number[] = [];
-        const indigenousPFalciparumData: number[] = [];
-        const indigenousPVivaxData: number[] = [];
-        const introducedCasesData: number[] = [];
-        const relapseCasesData: number[] = [];
+        const importedCasesData: (number | null)[] = [];
+        const indigenousPFalciparumData: (number | null)[] = [];
+        const indigenousPVivaxData: (number | null)[] = [];
+        const introducedCasesData: (number | null)[] = [];
+        const relapseCasesData: (number | null)[] = [];
         
         years.forEach(year => {
           const yearStr = year.toString();
@@ -112,35 +112,35 @@ export function Chart6({ orgUnit, countryCode, period, chartId, setChartRef, cha
           const importedRow = analyticsData.rows.find(row => 
             row[0] === 's9PrOj148cI' && row[2] === yearStr
           );
-          const rawImportedValue = importedRow ? parseFloat(importedRow[3]) || 0 : 0;
+          const rawImportedValue = importedRow && importedRow[3] ? parseFloat(importedRow[3]) : null;
           const transformedImportedValue = dataTransformationService.transformValue(rawImportedValue, 's9PrOj148cI');
           importedCasesData.push(transformedImportedValue);
           
           const indigenousPFRow = analyticsData.rows.find(row => 
             row[0] === 'ulmblp2rojh' && row[2] === yearStr
           );
-          const rawIndigenousPFValue = indigenousPFRow ? parseFloat(indigenousPFRow[3]) || 0 : 0;
+          const rawIndigenousPFValue = indigenousPFRow && indigenousPFRow[3] ? parseFloat(indigenousPFRow[3]) : null;
           const transformedIndigenousPFValue = dataTransformationService.transformValue(rawIndigenousPFValue, 'ulmblp2rojh');
           indigenousPFalciparumData.push(transformedIndigenousPFValue);
           
           const indigenousPVRow = analyticsData.rows.find(row => 
             row[0] === 'UMgazh7eqLm' && row[2] === yearStr
           );
-          const rawIndigenousPVValue = indigenousPVRow ? parseFloat(indigenousPVRow[3]) || 0 : 0;
+          const rawIndigenousPVValue = indigenousPVRow && indigenousPVRow[3] ? parseFloat(indigenousPVRow[3]) : null;
           const transformedIndigenousPVValue = dataTransformationService.transformValue(rawIndigenousPVValue, 'UMgazh7eqLm');
           indigenousPVivaxData.push(transformedIndigenousPVValue);
           
           const introducedRow = analyticsData.rows.find(row => 
             row[0] === 'm0jc79EVfzn' && row[2] === yearStr
           );
-          const rawIntroducedValue = introducedRow ? parseFloat(introducedRow[3]) || 0 : 0;
+          const rawIntroducedValue = introducedRow && introducedRow[3] ? parseFloat(introducedRow[3]) : null;
           const transformedIntroducedValue = dataTransformationService.transformValue(rawIntroducedValue, 'm0jc79EVfzn');
           introducedCasesData.push(transformedIntroducedValue);
           
           const relapseRow = analyticsData.rows.find(row => 
             row[0] === 'MFzhW1xlBFW' && row[2] === yearStr
           );
-          const rawRelapseValue = relapseRow ? parseFloat(relapseRow[3]) || 0 : 0;
+          const rawRelapseValue = relapseRow && relapseRow[3] ? parseFloat(relapseRow[3]) : null;
           const transformedRelapseValue = dataTransformationService.transformValue(rawRelapseValue, 'MFzhW1xlBFW');
           relapseCasesData.push(transformedRelapseValue);
         });
@@ -214,10 +214,10 @@ export function Chart6({ orgUnit, countryCode, period, chartId, setChartRef, cha
         );
       } else {
         // Non-E2025 countries datasets
-        const inpatientCasesData: number[] = [];
-        const inpatientCasesUnder5Data: number[] = [];
-        const inpatientDeathsData: number[] = [];
-        const inpatientDeathsUnder5Data: number[] = [];
+        const inpatientCasesData: (number | null)[] = [];
+        const inpatientCasesUnder5Data: (number | null)[] = [];
+        const inpatientDeathsData: (number | null)[] = [];
+        const inpatientDeathsUnder5Data: (number | null)[] = [];
         
         years.forEach(year => {
           const yearStr = year.toString();
@@ -225,28 +225,28 @@ export function Chart6({ orgUnit, countryCode, period, chartId, setChartRef, cha
           const inpatientCasesRow = analyticsData.rows.find(row => 
             row[0] === 'GPi56xW9OJJ' && row[2] === yearStr
           );
-          const rawInpatientCasesValue = inpatientCasesRow ? parseFloat(inpatientCasesRow[3]) || 0 : 0;
+          const rawInpatientCasesValue = inpatientCasesRow && inpatientCasesRow[3] ? parseFloat(inpatientCasesRow[3]) : null;
           const transformedInpatientCasesValue = dataTransformationService.transformValue(rawInpatientCasesValue, 'GPi56xW9OJJ');
           inpatientCasesData.push(transformedInpatientCasesValue);
           
           const inpatientCasesU5Row = analyticsData.rows.find(row => 
             row[0] === 'WoxQjgg6grm' && row[2] === yearStr
           );
-          const rawInpatientCasesU5Value = inpatientCasesU5Row ? parseFloat(inpatientCasesU5Row[3]) || 0 : 0;
+          const rawInpatientCasesU5Value = inpatientCasesU5Row && inpatientCasesU5Row[3] ? parseFloat(inpatientCasesU5Row[3]) : null;
           const transformedInpatientCasesU5Value = dataTransformationService.transformValue(rawInpatientCasesU5Value, 'WoxQjgg6grm');
           inpatientCasesUnder5Data.push(transformedInpatientCasesU5Value);
           
           const inpatientDeathsRow = analyticsData.rows.find(row => 
             row[0] === 'P7pI8pyU313' && row[2] === yearStr
           );
-          const rawInpatientDeathsValue = inpatientDeathsRow ? parseFloat(inpatientDeathsRow[3]) || 0 : 0;
+          const rawInpatientDeathsValue = inpatientDeathsRow && inpatientDeathsRow[3] ? parseFloat(inpatientDeathsRow[3]) : null;
           const transformedInpatientDeathsValue = dataTransformationService.transformValue(rawInpatientDeathsValue, 'P7pI8pyU313');
           inpatientDeathsData.push(transformedInpatientDeathsValue);
           
           const inpatientDeathsU5Row = analyticsData.rows.find(row => 
             row[0] === 'jDevPHyqPDX' && row[2] === yearStr
           );
-          const rawInpatientDeathsU5Value = inpatientDeathsU5Row ? parseFloat(inpatientDeathsU5Row[3]) || 0 : 0;
+          const rawInpatientDeathsU5Value = inpatientDeathsU5Row && inpatientDeathsU5Row[3] ? parseFloat(inpatientDeathsU5Row[3]) : null;
           const transformedInpatientDeathsU5Value = dataTransformationService.transformValue(rawInpatientDeathsU5Value, 'jDevPHyqPDX');
           inpatientDeathsUnder5Data.push(transformedInpatientDeathsU5Value);
         });

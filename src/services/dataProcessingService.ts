@@ -42,6 +42,25 @@ class DataProcessingService {
     }
   }
 
+  convertToBoolean(value: string | number | null | undefined): boolean | null {
+    if (value === null || value === undefined) return null;
+    
+    // Handle numeric values (1 = Yes, 0 = No)
+    if (typeof value === 'number') {
+      return value === 1;
+    }
+    
+    // Handle string values
+    const upperValue = String(value).toUpperCase().trim();
+    if (upperValue === 'Y' || upperValue === 'YES' || upperValue === 'TRUE' || upperValue === '1') {
+      return true;
+    }
+    if (upperValue === 'N' || upperValue === 'NO' || upperValue === 'FALSE' || upperValue === '0') {
+      return false;
+    }
+    return null;
+  }
+
   async getOptionSetValue(optionSetId: string, code: string): Promise<string> {
     try {
       if (!this.optionSetCache.has(optionSetId)) {
@@ -88,18 +107,18 @@ class DataProcessingService {
     }
 
     // Return raw value or 0
-    return dataMap.get(formula);
+    return dataMap.get(formula) || 0;
   }
 
   async processCountryData(orgUnit: string, period: string): Promise<CountryProfileData> {
-    // First, get country code and INDIG_Source to determine display logic
-    const countryInfoElements = ['r9twqeAdnRe']; // INDIG_Source
-    const indigenousDeathsElements = ['xzCJwslAdtp']; // Indigenous deaths
+    // First, get country code, INDIG_Source (for charts), and PARAM_EPI_DISPLAY (for profile display)
+    const countryInfoElements = ['r9twqeAdnRe', 'Uk5ZiClT56N']; // INDIG_Source, PARAM_EPI_DISPLAY
     
     // Define all data elements needed for the country profile
     const populationElements = ['LQSgzKhQoh8', 'JsmA90dQeAh', 'fh1QtNCJUyq', 'eDlvedXdgwP'];
     const parasiteElements = ['tEKjyFJFiw0', 'PIUtvDhX4s6', 'EZiGVGfTyLe', 'IxSMxz5GT9U', 'e76O7EJtWGk', 'KT39UBQaP1w', 'uu7tSgybizF', 'sQmvMbqADAw'];
-    const casesElements = ['yJfOFMOsfoQ', 'TfL9cVeMHyd', 'WuN5NAumc6J', 'Z8mZlV7MnkP', 'Zgw9XVftBa9'];
+    // Cases elements: includes all needed for different EPI_DISPLAY values
+    const casesElements = ['yJfOFMOsfoQ', 'TfL9cVeMHyd', 'gyAhkgE9tlU', 'WuN5NAumc6J', 'Z8mZlV7MnkP', 'Zgw9XVftBa9', 'Ykqy9bxrjEW', 'gbrU43t4EVZ', 'LpmvOoiEVf0'];
     const estimatesElements = ['an08m0ybMb1', 'b6YD3A8Dr2Q', 'KKWevgN9TXF', 'teNpUQqjMSQ', 'NTePqFiUuS0', 'uPJpcydAwET'];
     
     // Therapeutic efficacy text elements (Medicine, Follow-up, Species)
@@ -190,22 +209,22 @@ class DataProcessingService {
       'Ub4bQGesaQa', // Used3
       // Row 2
       'OXa48KUAIpl', // Insecticide class
-      'NU9WgELSDVk', // Years
+      'MnqhjD2JGWb', // Years
       'FYGTLutUdIA', // (%) sites1
       'jGFk8LVWdyS', // Vectors2
-      'MnqhjD2JGWb', // Used3
+      'NU9WgELSDVk', // Used3
       // Row 3
       'GI8boxUVl0X', // Insecticide class
-      'AVEJomeEnuA', // Years
+      'jDFQP0JQamH', // Years
       'Putx3c0luqG', // (%) sites1
       'hJ3v9S8AK5S', // Vectors2
-      'jDFQP0JQamH', // Used3
+      'AVEJomeEnuA', // Used3
       // Row 4
       'catAlhTNBdV', // Insecticide class
-      'AlLE4Na6ZaK', // Years
+      'dQ8Zy175oQc', // Years
       'id9O30pMkaD', // (%) sites1
       'b4mMqIHFcIV', // Vectors2
-      'dQ8Zy175oQc'  // Used3
+      'AlLE4Na6ZaK'  // Used3
     ];
 
     // RDT type elements
@@ -275,9 +294,11 @@ class DataProcessingService {
           const rawValue = row[3];
           
           // Check if this is a text data element (policies, medicines, anopheles species, etc.)
+          // Note: Sites elements (UKNTRFYcgr6, FYGTLutUdIA, Putx3c0luqG, id9O30pMkaD) are numeric and should NOT be in this list
+          // Note: Used elements (Ub4bQGesaQa, NU9WgELSDVk, AVEJomeEnuA, AlLE4Na6ZaK) are numeric (1/0) and should NOT be in this list
           const anophelesElements = ['EZiGVGfTyLe', 'IxSMxz5GT9U', 'e76O7EJtWGk', 'KT39UBQaP1w', 'uu7tSgybizF', 'sQmvMbqADAw'];
-          const resistanceTextElements = ['JRiVdTENIoc', 'e0EfJGiSb79', 'YqvLJLueLT1', 'Ub4bQGesaQa', 'OXa48KUAIpl', 'NU9WgELSDVk', 'jGFk8LVWdyS', 'MnqhjD2JGWb', 'GI8boxUVl0X', 'AVEJomeEnuA', 'hJ3v9S8AK5S', 'jDFQP0JQamH', 'catAlhTNBdV', 'AlLE4Na6ZaK', 'b4mMqIHFcIV', 'dQ8Zy175oQc'];
-          if (policyYesNoElements.includes(dataElement) || treatmentMedicineElements.includes(dataElement) || anophelesElements.includes(dataElement) || resistanceTextElements.includes(dataElement) || dataElement === 'UIwEygmwj1J' || dataElement === 'IBovXuvqLqM' || dataElement === 'lmkabfeVd1U' || dataElement === 'YNRlSV0dMPf' 
+          const resistanceTextElements = ['JRiVdTENIoc', 'e0EfJGiSb79', 'YqvLJLueLT1', 'OXa48KUAIpl', 'jGFk8LVWdyS', 'MnqhjD2JGWb', 'GI8boxUVl0X', 'hJ3v9S8AK5S', 'jDFQP0JQamH', 'catAlhTNBdV', 'b4mMqIHFcIV', 'dQ8Zy175oQc'];
+          if (policyYesNoElements.includes(dataElement) || treatmentMedicineElements.includes(dataElement) || anophelesElements.includes(dataElement) || resistanceTextElements.includes(dataElement) || dataElement === 'UIwEygmwj1J' || dataElement === 'IBovXuvqLqM' || dataElement === 'lmkabfeVd1U' || dataElement === 'YNRlSV0dMPf' || dataElement === 'LpmvOoiEVf0' 
               || dataElement ==='rRs7tyHlgRc'
              || dataElement ==='MCb8TWRSlb0'
              || dataElement ==='LRksI6Vhz98'
@@ -300,8 +321,8 @@ class DataProcessingService {
       });
 
       // Determine country flags based on logic
-      const indigSource = dataMap.get('r9twqeAdnRe') || 0;
-      const indigCountry = indigSource !== 3;
+      const indigSource = dataMap.get('r9twqeAdnRe') || 0; // Keep for charts
+      const param_EPI_DISPLAY = dataMap.get('Uk5ZiClT56N') || 0; // For profile display logic
       
       const e2025CountriesArray = ["BLZ","BTN","BWA","CPV","COM","CRI","PRK","DOM","ECU","SWZ","GUF","GTM","HND","IRN","MYS","MEX","NPL","PAN","KOR","STP","SAU","ZAF","SUR","THA","TLS","VUT"];
       const isE2025Country = e2025CountriesArray.includes(countryCode);
@@ -356,31 +377,31 @@ class DataProcessingService {
         anophelesSpecies
       };
 
-      // Process cases data with realistic values
+      // Process cases data - fetch all needed values
       const totalCases = dataMap.get('yJfOFMOsfoQ') || 0;
+      const totalConfirmedCases = dataMap.get('TfL9cVeMHyd') || 0;
+      const reportedIndigenousConfirmedCases = dataMap.get('gyAhkgE9tlU') || 0;
+      const confirmedHealthFacility = dataMap.get('WuN5NAumc6J') || 0;
+      const confirmedCommunity = dataMap.get('Z8mZlV7MnkP') || 0;
+      const confirmedPrivateSector = dataMap.get('Zgw9XVftBa9') || 0;
+      const reportedDeaths = dataMap.get('Ykqy9bxrjEW') || 0;
+      const indigenousDeaths = dataMap.get('gbrU43t4EVZ') || 0;
       
-      let confirmedHealthFacility = 0;
-      let confirmedCommunity = 0;
-      let confirmedPrivateSector = 0;
-      let indigenousDeaths = 0;
-      
-      if (indigCountry) {
-        // For indigenous countries, get indigenous deaths
-        indigenousDeaths = dataMap.get('xzCJwslAdtp') || 0;
-      } else {
-        // For non-indigenous countries, get the regular case data
-        confirmedHealthFacility = dataMap.get('TfL9cVeMHyd') || 0;
-        confirmedCommunity = (dataMap.get('WuN5NAumc6J') || 0) + (dataMap.get('Z8mZlV7MnkP') || 0);
-        confirmedPrivateSector = dataMap.get('Zgw9XVftBa9') || 0;
-      }
+      // Get footnote text
+      const footnoteText = textDataMap.get('LpmvOoiEVf0') || null;
 
       const cases: CasesData = {
         totalCases,
+        totalConfirmedCases,
+        reportedIndigenousConfirmedCases,
         confirmedHealthFacility,
         confirmedCommunity,
         confirmedPrivateSector,
+        reportedDeaths,
         indigenousDeaths,
-        isIndigCountry: indigCountry
+        paramEpiDisplay: param_EPI_DISPLAY,
+        footnoteText,
+        indigSource: indigSource // Keep for charts
       };
 
       // Process estimates
@@ -569,9 +590,9 @@ class DataProcessingService {
         {
           medicine: textDataMap.get('UIwEygmwj1J') || '-',
           year: dataMap.get('l7q5DJ4yQMP') ? Number(dataMap.get('l7q5DJ4yQMP')) : null,
-          min: dataMap.get('BlBY4UdnWZM') >=0 ? Number(dataMap.get('BlBY4UdnWZM')) : null,
-          median: dataMap.get('WMbpMQqde0V') >=0 ? Number(dataMap.get('WMbpMQqde0V')) : null,
-          max: dataMap.get('YHpCsWMQ6pE') >=0 ? Number(dataMap.get('YHpCsWMQ6pE')) : null,
+          min: (dataMap.get('BlBY4UdnWZM') ?? 0) >= 0 ? Number(dataMap.get('BlBY4UdnWZM') ?? 0) : null,
+          median: (dataMap.get('WMbpMQqde0V') ?? 0) >= 0 ? Number(dataMap.get('WMbpMQqde0V') ?? 0) : null,
+          max: (dataMap.get('YHpCsWMQ6pE') ?? 0) >= 0 ? Number(dataMap.get('YHpCsWMQ6pE') ?? 0) : null,
           followUp: textDataMap.get('IBovXuvqLqM') || '-',
           numberOfStudies: dataMap.get('kcRHmPlregB') || null,
           species: textDataMap.get('lmkabfeVd1U') || '-'
@@ -579,9 +600,9 @@ class DataProcessingService {
         {
           medicine: textDataMap.get('rRs7tyHlgRc') || '-',
           year: dataMap.get('NSNQbWC8PiS') ? Number(dataMap.get('NSNQbWC8PiS')) : null,
-          min: dataMap.get('vB7s4Xq6pkx') >=0 ? Number(dataMap.get('vB7s4Xq6pkx')) : null,
-          median: dataMap.get('QA2HfJ5ZOQ0')>=0 ? Number(dataMap.get('QA2HfJ5ZOQ0')) : null,
-          max: dataMap.get('w8R5rKb5KuT') >=0 ? Number(dataMap.get('w8R5rKb5KuT')) : null,
+          min: (dataMap.get('vB7s4Xq6pkx') ?? 0) >= 0 ? Number(dataMap.get('vB7s4Xq6pkx') ?? 0) : null,
+          median: (dataMap.get('QA2HfJ5ZOQ0') ?? 0) >= 0 ? Number(dataMap.get('QA2HfJ5ZOQ0') ?? 0) : null,
+          max: (dataMap.get('w8R5rKb5KuT') ?? 0) >= 0 ? Number(dataMap.get('w8R5rKb5KuT') ?? 0) : null,
           followUp: textDataMap.get('MCb8TWRSlb0') || '-',
           numberOfStudies: dataMap.get('RpyoOJfvdfW') || null,
           species: textDataMap.get('LRksI6Vhz98') || '-'
@@ -589,9 +610,9 @@ class DataProcessingService {
         {
           medicine: textDataMap.get('NrMNyIUB7RQ') || '-',
           year: dataMap.get('rrKtSwyOGd9') ? Number(dataMap.get('rrKtSwyOGd9')) : null,
-          min: dataMap.get('a6bMWsqDlcR') >=0 ? Number(dataMap.get('a6bMWsqDlcR')) : null,
-          median: dataMap.get('l87IZFzITds') >=0 ? Number(dataMap.get('l87IZFzITds')) : null,
-          max: dataMap.get('TvBs5GvflzK') >=0 ? parseFloat(dataMap.get('TvBs5GvflzK')) : null,
+          min: (dataMap.get('a6bMWsqDlcR') ?? 0) >= 0 ? Number(dataMap.get('a6bMWsqDlcR') ?? 0) : null,
+          median: (dataMap.get('l87IZFzITds') ?? 0) >= 0 ? Number(dataMap.get('l87IZFzITds') ?? 0) : null,
+          max: (dataMap.get('TvBs5GvflzK') ?? 0) >= 0 ? Number(dataMap.get('TvBs5GvflzK') ?? 0) : null,
           followUp: textDataMap.get('TzuDFOcom3h') || '-',
           numberOfStudies: dataMap.get('k7AvoFS3jii') || null,
           species: textDataMap.get('WdskU0t2N1i') || '-'
@@ -599,9 +620,9 @@ class DataProcessingService {
         {
           medicine: textDataMap.get('kp667EGomur') || '-',
           year: dataMap.get('C1WcroDjXOI') ? Number(dataMap.get('C1WcroDjXOI')) : null,
-          min: dataMap.get('b9Biv0I4khx') >=0 ? Number(dataMap.get('b9Biv0I4khx')) : null,
-          median: dataMap.get('K4IETv0ObQb') >=0 ? Number(dataMap.get('K4IETv0ObQb')) : null,
-          max: dataMap.get('bk4xSYYUTwX') >=0 ? parseFloat(dataMap.get('bk4xSYYUTwX')) : null,
+          min: (dataMap.get('b9Biv0I4khx') ?? 0) >= 0 ? Number(dataMap.get('b9Biv0I4khx') ?? 0) : null,
+          median: (dataMap.get('K4IETv0ObQb') ?? 0) >= 0 ? Number(dataMap.get('K4IETv0ObQb') ?? 0) : null,
+          max: (dataMap.get('bk4xSYYUTwX') ?? 0) >= 0 ? Number(dataMap.get('bk4xSYYUTwX') ?? 0) : null,
           followUp: textDataMap.get('aQdJEFAqmg2') || '-',
           numberOfStudies: dataMap.get('Vh3SiBeiLqT') || null,
           species: textDataMap.get('ejBlfRCpZAB') || '-'
@@ -613,30 +634,30 @@ class DataProcessingService {
         {
           insecticideClass: await this.getOptionSetValue('eHrT4UiAgh8', textDataMap.get('JRiVdTENIoc') || '') || '-',
           years: textDataMap.get('e0EfJGiSb79') || '-',
-          sitesPct: dataMap.get('UKNTRFYcgr6') || null,
+          sites: dataMap.get('UKNTRFYcgr6') ?? null,
           vectors: textDataMap.get('YqvLJLueLT1') || '-',
-          used: textDataMap.get('Ub4bQGesaQa') || '-'
+          used: this.convertToBoolean(dataMap.get('Ub4bQGesaQa'))
         },
         {
           insecticideClass: await this.getOptionSetValue('eHrT4UiAgh8', textDataMap.get('OXa48KUAIpl') || '') || '-',
-          years: textDataMap.get('NU9WgELSDVk') || '-',
-          sitesPct: dataMap.get('FYGTLutUdIA') || null,
+          years: textDataMap.get('MnqhjD2JGWb') || '-',
+          sites: dataMap.get('FYGTLutUdIA') ?? null,
           vectors: textDataMap.get('jGFk8LVWdyS') || '-',
-          used: textDataMap.get('MnqhjD2JGWb') || '-'
+          used: this.convertToBoolean(dataMap.get('NU9WgELSDVk'))
         },
         {
           insecticideClass: await this.getOptionSetValue('eHrT4UiAgh8', textDataMap.get('GI8boxUVl0X') || '') || '-',
-          years: textDataMap.get('AVEJomeEnuA') || '-',
-          sitesPct: dataMap.get('Putx3c0luqG') || null,
+          years: textDataMap.get('jDFQP0JQamH') || '-',
+          sites: dataMap.get('Putx3c0luqG') ?? null,
           vectors: textDataMap.get('hJ3v9S8AK5S') || '-',
-          used: textDataMap.get('jDFQP0JQamH') || '-'
+          used: this.convertToBoolean(dataMap.get('AVEJomeEnuA'))
         },
         {
           insecticideClass: await this.getOptionSetValue('eHrT4UiAgh8', textDataMap.get('catAlhTNBdV') || '') || '-',
-          years: textDataMap.get('AlLE4Na6ZaK') || '-',
-          sitesPct: dataMap.get('id9O30pMkaD') || null,
+          years: textDataMap.get('dQ8Zy175oQc') || '-',
+          sites: dataMap.get('id9O30pMkaD') ?? null,
           vectors: textDataMap.get('b4mMqIHFcIV') || '-',
-          used: textDataMap.get('dQ8Zy175oQc') || '-'
+          used: this.convertToBoolean(dataMap.get('AlLE4Na6ZaK'))
         }
       ];
 

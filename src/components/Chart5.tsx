@@ -80,8 +80,8 @@ export function Chart5({ orgUnit, countryCode, period, chartId, setChartRef, cha
       );
       
       // Process the data
-      const casesAllSpeciesData: number[] = [];
-      const casesPVivaxData: number[] = [];
+      const casesAllSpeciesData: (number | null)[] = [];
+      const casesPVivaxData: (number | null)[] = [];
       
       // Create data maps for each year
       years.forEach(year => {
@@ -91,7 +91,7 @@ export function Chart5({ orgUnit, countryCode, period, chartId, setChartRef, cha
         const casesAllRow = analyticsData.rows.find(row => 
           row[0] === casesAllSpeciesUID && row[2] === yearStr
         );
-        const rawCasesAllValue = casesAllRow ? parseFloat(casesAllRow[3]) || 0 : 0;
+        const rawCasesAllValue = casesAllRow && casesAllRow[3] ? parseFloat(casesAllRow[3]) : null;
         const transformedCasesAllValue = dataTransformationService.transformValue(rawCasesAllValue, casesAllSpeciesUID);
         casesAllSpeciesData.push(transformedCasesAllValue);
         
@@ -99,7 +99,7 @@ export function Chart5({ orgUnit, countryCode, period, chartId, setChartRef, cha
         const casesPVivaxRow = analyticsData.rows.find(row => 
           row[0] === casesPVivaxUID && row[2] === yearStr
         );
-        const rawCasesPVivaxValue = casesPVivaxRow ? parseFloat(casesPVivaxRow[3]) || 0 : 0;
+        const rawCasesPVivaxValue = casesPVivaxRow && casesPVivaxRow[3] ? parseFloat(casesPVivaxRow[3]) : null;
         const transformedCasesPVivaxValue = dataTransformationService.transformValue(rawCasesPVivaxValue, casesPVivaxUID);
         casesPVivaxData.push(transformedCasesPVivaxValue);
       });

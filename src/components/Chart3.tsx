@@ -75,10 +75,10 @@ export function Chart3({ orgUnit, period, chartId, setChartRef, chartSource }: C
       );
       
       // Process the data
-      const treatmentCoursesData: number[] = [];
-      const suspectedTestedData: number[] = [];
-      const feverCasesData: number[] = [];
-      const actsPercentData: number[] = [];
+      const treatmentCoursesData: (number | null)[] = [];
+      const suspectedTestedData: (number | null)[] = [];
+      const feverCasesData: (number | null)[] = [];
+      const actsPercentData: (number | null)[] = [];
       
       // Create data maps for each year
       years.forEach(year => {
@@ -88,7 +88,7 @@ export function Chart3({ orgUnit, period, chartId, setChartRef, chartSource }: C
         const treatmentRow = analyticsData.rows.find(row => 
           row[0] === treatmentCoursesUID && row[2] === yearStr
         );
-        const rawTreatmentValue = treatmentRow ? parseFloat(treatmentRow[3]) || 0 : 0;
+        const rawTreatmentValue = treatmentRow && treatmentRow[3] ? parseFloat(treatmentRow[3]) : null;
         const transformedTreatmentValue = dataTransformationService.transformValue(rawTreatmentValue, treatmentCoursesUID);
         treatmentCoursesData.push(transformedTreatmentValue);
         
@@ -96,7 +96,7 @@ export function Chart3({ orgUnit, period, chartId, setChartRef, chartSource }: C
         const suspectedRow = analyticsData.rows.find(row => 
           row[0] === suspectedTestedUID && row[2] === yearStr
         );
-        const rawSuspectedValue = suspectedRow ? parseFloat(suspectedRow[3]) || 0 : 0;
+        const rawSuspectedValue = suspectedRow && suspectedRow[3] ? parseFloat(suspectedRow[3]) : null;
         const transformedSuspectedValue = dataTransformationService.transformValue(rawSuspectedValue, suspectedTestedUID);
         suspectedTestedData.push(transformedSuspectedValue);
         
@@ -104,7 +104,7 @@ export function Chart3({ orgUnit, period, chartId, setChartRef, chartSource }: C
         const feverRow = analyticsData.rows.find(row => 
           row[0] === feverCasesUID && row[2] === yearStr
         );
-        const rawFeverValue = feverRow ? parseFloat(feverRow[3]) || 0 : 0;
+        const rawFeverValue = feverRow && feverRow[3] ? parseFloat(feverRow[3]) : null;
         const transformedFeverValue = dataTransformationService.transformValue(rawFeverValue, feverCasesUID);
         feverCasesData.push(transformedFeverValue);
         
@@ -112,7 +112,7 @@ export function Chart3({ orgUnit, period, chartId, setChartRef, chartSource }: C
         const actsRow = analyticsData.rows.find(row => 
           row[0] === actsPercentUID && row[2] === yearStr
         );
-        const rawActsValue = actsRow ? parseFloat(actsRow[3]) || 0 : 0;
+        const rawActsValue = actsRow && actsRow[3] ? parseFloat(actsRow[3]) : null;
         const transformedActsValue = dataTransformationService.transformValue(rawActsValue, actsPercentUID);
         actsPercentData.push(transformedActsValue);
       });
@@ -301,7 +301,7 @@ export function Chart3({ orgUnit, period, chartId, setChartRef, chartSource }: C
           },
         },
         min: 0,
-        max: 100,
+        max: 105,
       },
     },
     interaction: {

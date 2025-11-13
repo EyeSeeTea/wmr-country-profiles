@@ -125,12 +125,21 @@ export function CountryProfile({ country, period }: CountryProfileProps) {
 
       // Use period-1 for map data elements
       const mapPeriod = (parseInt(period)).toString();
+      
+      console.log('🗺️ Loading map data:', {
+        period,
+        mapPeriod,
+        countryId: country.id,
+        countryName: country.displayName
+      });
 
       const analyticsData = await dhis2Service.getAnalyticsData(
         mapElements,
         country.id,
         mapPeriod
       );
+
+      console.log('🗺️ Map analytics data received:', analyticsData);
 
       // Create text data map for map data
       const textDataMap = new Map<string, string>();
@@ -140,16 +149,85 @@ export function CountryProfile({ country, period }: CountryProfileProps) {
         textDataMap.set(dataElement, rawValue);
       });
 
-      setMapData({
-        map1Name: textDataMap.get('PJKhyoOd4C7') || '',
-        map2Name: textDataMap.get('FYt2o1zbOwm') || '',
-        map1Legend: textDataMap.get('INwlclks0KQ') || '',
-        map2Legend: textDataMap.get('lnsHnhqAaTj') || '',
-        map1Year: textDataMap.get('f2u7VciFSDC') || '',
-        map2Year: textDataMap.get('JEPMG4n2TIN') || ''
+      // Get map names and years directly from DHIS2
+      const map1Name = textDataMap.get('PJKhyoOd4C7') || '';
+      const map2Name = textDataMap.get('FYt2o1zbOwm') || '';
+      const map1Legend = textDataMap.get('INwlclks0KQ') || '';
+      const map2Legend = textDataMap.get('lnsHnhqAaTj') || '';
+      const map1Year = textDataMap.get('f2u7VciFSDC') || '';
+      const map2Year = textDataMap.get('JEPMG4n2TIN') || '';
+
+      console.log('🗺️ Map data extracted:', {
+        map1Name,
+        map2Name,
+        map1Legend,
+        map2Legend,
+        map1Year,
+        map2Year
       });
+
+      const mapDataObj = {
+        map1Name,
+        map2Name,
+        map1Legend,
+        map2Legend,
+        map1Year,
+        map2Year
+      };
+
+      // Log the image paths that will be used (always use period for path)
+      // Using relative paths for DHIS2 app deployment
+      const basePath = './img';
+      const currentLocation = typeof window !== 'undefined' ? window.location.href : 'unknown';
+      
+      if (map1Name) {
+        const relativePath = `${basePath}/${period}/${map1Name}`;
+        const fullUrl = typeof window !== 'undefined' ? new URL(relativePath, window.location.href).href : relativePath;
+        console.log('🗺️ Map 1 image path:', {
+          relativePath,
+          fullUrl,
+          currentLocation,
+          period,
+          map1Name
+        });
+      }
+      if (map2Name) {
+        const relativePath = `${basePath}/${period}/${map2Name}`;
+        const fullUrl = typeof window !== 'undefined' ? new URL(relativePath, window.location.href).href : relativePath;
+        console.log('🗺️ Map 2 image path:', {
+          relativePath,
+          fullUrl,
+          currentLocation,
+          period,
+          map2Name
+        });
+      }
+      if (map1Legend) {
+        const relativePath = `${basePath}/${period}/${map1Legend}`;
+        const fullUrl = typeof window !== 'undefined' ? new URL(relativePath, window.location.href).href : relativePath;
+        console.log('🗺️ Map 1 legend path:', {
+          relativePath,
+          fullUrl,
+          currentLocation,
+          period,
+          map1Legend
+        });
+      }
+      if (map2Legend) {
+        const relativePath = `${basePath}/${period}/${map2Legend}`;
+        const fullUrl = typeof window !== 'undefined' ? new URL(relativePath, window.location.href).href : relativePath;
+        console.log('🗺️ Map 2 legend path:', {
+          relativePath,
+          fullUrl,
+          currentLocation,
+          period,
+          map2Legend
+        });
+      }
+
+      setMapData(mapDataObj);
     } catch (err) {
-      console.error('Failed to load map data:', err);
+      console.error('❌ Failed to load map data:', err);
     }
   };
 
@@ -225,41 +303,46 @@ export function CountryProfile({ country, period }: CountryProfileProps) {
             : 'md:grid-cols-1'
         }`}>
           {/* Map 1 and Legend 1 - Only show if map1Name exists */}
-          {mapData?.map1Name && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 avoid-break print:shadow-none print:border print:p-3">
-              <div className="flex gap-0">
-                <div className="bg-white-100 rounded-lg h-64 flex items-center justify-center overflow-hidden" style={{ width: '410px' }}>
-                  <img 
-                    src={`img/${period}/${mapData.map1Name}`}
-                    alt={`Map 1: ${mapData.map1Name.replace('.png', '')} for ${country.displayName} in ${mapData.map1Year || period}`}
-                    className="max-w-full max-h-full object-contain"
-                    style={{ width: '410px', height: '260px' }}
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      const parent = target.parentElement;
-                      if (parent) {
-                        parent.innerHTML = `
-                          <div class="text-center text-gray-500 print:text-sm">
-                            <svg class="h-8 w-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v4 M12 18h.01 M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                            </svg>
-                            <p class="text-sm">Map not available</p>
-                          </div>
-                        `;
-                      }
-                    }}
-                  />
-                </div>
-                {mapData?.map1Legend && (
-                  <div className="bg-white-100 rounded-lg h-64 flex items-center justify-center overflow-hidden">
+          {mapData?.map1Name && (() => {
+            const map1Path = `./img/${period}/${mapData.map1Name}`;
+            const map1FullUrl = typeof window !== 'undefined' ? new URL(map1Path, window.location.href).href : map1Path;
+            console.log('🖼️ Constructing Map 1 path:', {
+              relativePath: map1Path,
+              fullUrl: map1FullUrl,
+              currentLocation: typeof window !== 'undefined' ? window.location.href : 'unknown',
+              windowPathname: typeof window !== 'undefined' ? window.location.pathname : 'unknown',
+              period,
+              map1Name: mapData.map1Name
+            });
+            
+            return (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 avoid-break print:shadow-none print:border print:p-3">
+                <div className="flex gap-0">
+                  <div className="bg-white-100 rounded-lg h-64 flex items-center justify-center overflow-hidden" style={{ width: '410px' }}>
                     <img 
-                      src={`img/${period}/${mapData.map1Legend}`}
-                      alt={`Legend for Map 1: ${mapData.map1Name.replace('.png', '')}`}
+                      src={map1Path}
+                      alt={`Map 1: ${mapData.map1Name.replace('.png', '')} for ${country.displayName} in ${mapData.map1Year || period}`}
+                      onLoad={() => {
+                        console.log('✅ Map 1 loaded successfully:', {
+                          relativePath: map1Path,
+                          fullUrl: map1FullUrl,
+                          actualSrc: (document.querySelector(`img[alt*="Map 1:"]`) as HTMLImageElement)?.src
+                        });
+                      }}
                       className="max-w-full max-h-full object-contain"
-                      style={{ height: '200px' }}
+                      style={{ width: '410px', height: '260px' }}
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
+                        const failedPath = target.src;
+                        console.error('❌ Map 1 image failed to load:', {
+                          failedPath,
+                          relativePath: map1Path,
+                          fullUrl: map1FullUrl,
+                          currentLocation: typeof window !== 'undefined' ? window.location.href : 'unknown',
+                          windowPathname: typeof window !== 'undefined' ? window.location.pathname : 'unknown',
+                          period,
+                          map1Name: mapData.map1Name
+                        });
                         target.style.display = 'none';
                         const parent = target.parentElement;
                         if (parent) {
@@ -268,57 +351,108 @@ export function CountryProfile({ country, period }: CountryProfileProps) {
                               <svg class="h-8 w-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v4 M12 18h.01 M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                               </svg>
-                              <p class="text-sm">Legend not available</p>
+                              <p class="text-sm">Map not available</p>
                             </div>
                           `;
                         }
                       }}
                     />
                   </div>
+                  {mapData?.map1Legend && (() => {
+                    const legend1Path = `./img/${period}/${mapData.map1Legend}`;
+                    const legend1FullUrl = typeof window !== 'undefined' ? new URL(legend1Path, window.location.href).href : legend1Path;
+                    console.log('🖼️ Constructing Map 1 Legend path:', {
+                      relativePath: legend1Path,
+                      fullUrl: legend1FullUrl,
+                      currentLocation: typeof window !== 'undefined' ? window.location.href : 'unknown',
+                      period,
+                      map1Legend: mapData.map1Legend
+                    });
+                    
+                    return (
+                      <div className="bg-white-100 rounded-lg h-64 flex items-center justify-center overflow-hidden">
+                        <img 
+                          src={legend1Path}
+                          alt={`Legend for Map 1: ${mapData.map1Name.replace('.png', '')}`}
+                          className="max-w-full max-h-full object-contain"
+                          style={{ height: '200px' }}
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            const failedPath = target.src;
+                            console.error('❌ Map 1 legend failed to load:', {
+                              failedPath,
+                              relativePath: legend1Path,
+                              fullUrl: legend1FullUrl,
+                              currentLocation: typeof window !== 'undefined' ? window.location.href : 'unknown',
+                              period,
+                              map1Legend: mapData.map1Legend
+                            });
+                            target.style.display = 'none';
+                            const parent = target.parentElement;
+                            if (parent) {
+                              parent.innerHTML = `
+                                <div class="text-center text-gray-500 print:text-sm">
+                                  <svg class="h-8 w-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v4 M12 18h.01 M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                  </svg>
+                                  <p class="text-sm">Legend not available</p>
+                                </div>
+                              `;
+                            }
+                          }}
+                        />
+                      </div>
+                    );
+                  })()}
+                </div>
+                {mapData?.map1Year && mapData.map1Year !== period && (
+                  <p className="text-sm text-gray-600 mb-2 print:text-xs">Year: {mapData.map1Year}</p>
                 )}
               </div>
-              {mapData?.map1Year && mapData.map1Year !== period && (
-                <p className="text-sm text-gray-600 mb-2 print:text-xs">Year: {mapData.map1Year}</p>
-              )}
-            </div>
-          )}
-          
+            );
+          })()}
+
           {/* Map 2 and Legend 2 - Only show if map2Name exists */}
-          {mapData?.map2Name && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 avoid-break print:shadow-none print:border print:p-3">
-              <div className="flex gap-0">
-                <div className="bg-white-100 rounded-lg h-64 flex items-center justify-center overflow-hidden" style={{ width: '410px' }}>
-                  <img 
-                    src={`img/${period}/${mapData.map2Name}`}
-                    alt={`Map 2: ${mapData.map2Name.replace('.png', '')} for ${country.displayName} in ${mapData.map2Year || period}`}
-                    className="max-w-full max-h-full object-contain"
-                    style={{ width: '410px', height: '260px' }}
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      const parent = target.parentElement;
-                      if (parent) {
-                        parent.innerHTML = `
-                          <div class="text-center text-gray-500 print:text-sm">
-                            <svg class="h-8 w-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v4 M12 18h.01 M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                            </svg>
-                            <p class="text-sm">Map not available</p>
-                          </div>
-                        `;
-                      }
-                    }}
-                  />
-                </div>
-                {mapData?.map2Legend && (
-                  <div className="bg-white-100 rounded-lg h-64 flex items-center justify-center overflow-hidden">
+          {mapData?.map2Name && (() => {
+            const map2Path = `./img/${period}/${mapData.map2Name}`;
+            const map2FullUrl = typeof window !== 'undefined' ? new URL(map2Path, window.location.href).href : map2Path;
+            console.log('🖼️ Constructing Map 2 path:', {
+              relativePath: map2Path,
+              fullUrl: map2FullUrl,
+              currentLocation: typeof window !== 'undefined' ? window.location.href : 'unknown',
+              windowPathname: typeof window !== 'undefined' ? window.location.pathname : 'unknown',
+              period,
+              map2Name: mapData.map2Name
+            });
+            
+            return (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 avoid-break print:shadow-none print:border print:p-3">
+                <div className="flex gap-0">
+                  <div className="bg-white-100 rounded-lg h-64 flex items-center justify-center overflow-hidden" style={{ width: '410px' }}>
                     <img 
-                      src={`img/${period}/${mapData.map2Legend}`}
-                      alt={`Legend for Map 2: ${mapData.map2Name.replace('.png', '')}`}
+                      src={map2Path}
+                      alt={`Map 2: ${mapData.map2Name.replace('.png', '')} for ${country.displayName} in ${mapData.map2Year || period}`}
                       className="max-w-full max-h-full object-contain"
-                      style={{ height: '200px' }}
+                      style={{ width: '410px', height: '260px' }}
+                      onLoad={() => {
+                        console.log('✅ Map 2 loaded successfully:', {
+                          relativePath: map2Path,
+                          fullUrl: map2FullUrl,
+                          actualSrc: (document.querySelector(`img[alt*="Map 2:"]`) as HTMLImageElement)?.src
+                        });
+                      }}
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
+                        const failedPath = target.src;
+                        console.error('❌ Map 2 image failed to load:', {
+                          failedPath,
+                          relativePath: map2Path,
+                          fullUrl: map2FullUrl,
+                          currentLocation: typeof window !== 'undefined' ? window.location.href : 'unknown',
+                          windowPathname: typeof window !== 'undefined' ? window.location.pathname : 'unknown',
+                          period,
+                          map2Name: mapData.map2Name
+                        });
                         target.style.display = 'none';
                         const parent = target.parentElement;
                         if (parent) {
@@ -327,20 +461,66 @@ export function CountryProfile({ country, period }: CountryProfileProps) {
                               <svg class="h-8 w-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v4 M12 18h.01 M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                               </svg>
-                              <p class="text-sm">Legend not available</p>
+                              <p class="text-sm">Map not available</p>
                             </div>
                           `;
                         }
                       }}
                     />
                   </div>
+                  {mapData?.map2Legend && (() => {
+                    const legend2Path = `./img/${period}/${mapData.map2Legend}`;
+                    const legend2FullUrl = typeof window !== 'undefined' ? new URL(legend2Path, window.location.href).href : legend2Path;
+                    console.log('🖼️ Constructing Map 2 Legend path:', {
+                      relativePath: legend2Path,
+                      fullUrl: legend2FullUrl,
+                      currentLocation: typeof window !== 'undefined' ? window.location.href : 'unknown',
+                      period,
+                      map2Legend: mapData.map2Legend
+                    });
+                    
+                    return (
+                      <div className="bg-white-100 rounded-lg h-64 flex items-center justify-center overflow-hidden">
+                        <img 
+                          src={legend2Path}
+                          alt={`Legend for Map 2: ${mapData.map2Name.replace('.png', '')}`}
+                          className="max-w-full max-h-full object-contain"
+                          style={{ height: '200px' }}
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            const failedPath = target.src;
+                            console.error('❌ Map 2 legend failed to load:', {
+                              failedPath,
+                              relativePath: legend2Path,
+                              fullUrl: legend2FullUrl,
+                              currentLocation: typeof window !== 'undefined' ? window.location.href : 'unknown',
+                              period,
+                              map2Legend: mapData.map2Legend
+                            });
+                            target.style.display = 'none';
+                            const parent = target.parentElement;
+                            if (parent) {
+                              parent.innerHTML = `
+                                <div class="text-center text-gray-500 print:text-sm">
+                                  <svg class="h-8 w-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v4 M12 18h.01 M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                  </svg>
+                                  <p class="text-sm">Legend not available</p>
+                                </div>
+                              `;
+                            }
+                          }}
+                        />
+                      </div>
+                    );
+                  })()}
+                </div>
+                {mapData?.map2Year && mapData.map2Year !== period && (
+                  <p className="text-sm text-gray-600 mb-2 print:text-xs">Year: {mapData.map2Year}</p>
                 )}
               </div>
-              {mapData?.map2Year && mapData.map2Year !== period && (
-                <p className="text-sm text-gray-600 mb-2 print:text-xs">Year: {mapData.map2Year}</p>
-              )}
-            </div>
-          )}
+            );
+          })()}
         </div>
       )}
 
@@ -419,11 +599,11 @@ export function CountryProfile({ country, period }: CountryProfileProps) {
               <div className="bg-red-50 rounded-lg p-4 print:p-2 avoid-break">
                 <h4 className="font-medium text-gray-900 mb-2 print:text-sm print:mb-1">Major Plasmodium Species</h4>
                 <div className="text-sm text-gray-700 print:text-xs">
-                  <p><em>P. falciparum</em>: <span className="font-semibold text-red-600">{data.parasites.pFalciparum > 0 ? `${data.parasites.pFalciparum}%` : '-'}</span></p>
+                  <p><em>P. falciparum</em><sup>*</sup>: <span className="font-semibold text-red-600">{data.parasites.pFalciparum > 0 ? `${data.parasites.pFalciparum}%` : '-'}</span></p>
                   <p><em>P. vivax</em>: <span className="font-semibold text-orange-600">{data.parasites.pVivax > 0 ? `${data.parasites.pVivax}%` : '-'}</span></p>
                 </div>
                 <div className="mt-3 pt-2 border-t border-red-200 print:mt-1 print:pt-1">
-                  <p className="text-xs text-gray-600 italic print:text-[10px]">includes mixed infections and other species of Plasmodium</p>
+                  <p className="text-xs text-gray-600 italic print:text-[10px]"><sup>*</sup>Includes mixed infections and other species of Plasmodium</p>
                 </div>
               </div>
               <div className="bg-blue-50 rounded-lg p-4 print:p-2 avoid-break">
@@ -449,37 +629,64 @@ export function CountryProfile({ country, period }: CountryProfileProps) {
               <AlertCircle className="h-5 w-5 text-orange-500 print:h-4 print:w-4" />
               <h3 className="font-semibold text-gray-900 print:text-base print:leading-snug">Reported Cases and Deaths</h3>
             </div>
-            {data.cases.isIndigCountry ? (
-              <div className="space-y-3 print:space-y-2">
-                <div className="flex justify-between items-center p-3 bg-orange-50 rounded-lg print:p-2 avoid-break">
-                  <span className="text-sm text-gray-700 print:text-xs">Total cases (presumed + confirmed)</span>
-                  <span className="font-semibold text-orange-600 print:text-xs">{dataProcessingService.formatNumber(data.cases.totalCases)}</span>
+            <div className="space-y-3 print:space-y-2">
+              {/* Always show: Total cases (presumed + confirmed) */}
+              <div className="flex justify-between items-center p-3 bg-orange-50 rounded-lg print:p-2 avoid-break">
+                <span className="text-sm text-gray-700 print:text-xs">Total cases (presumed + confirmed)</span>
+                <span className="font-semibold text-orange-600 print:text-xs">{dataProcessingService.formatNumber(data.cases.totalCases)}</span>
+              </div>
+              
+              {/* If param_EPI_DISPLAY=1, show Total confirmed cases */}
+              {data.cases.paramEpiDisplay === 1 && (
+                <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg print:p-2 avoid-break">
+                  <span className="text-sm text-gray-700 print:text-xs">Total confirmed cases</span>
+                  <span className="font-semibold text-blue-600 print:text-xs">{dataProcessingService.formatNumber(data.cases.totalConfirmedCases)}</span>
                 </div>
+              )}
+              
+              {/* If param_EPI_DISPLAY=2 OR 3, show Reported indigenous confirmed cases */}
+              {(data.cases.paramEpiDisplay === 2 || data.cases.paramEpiDisplay === 3) && (
+                <div className="flex justify-between items-center p-3 bg-indigo-50 rounded-lg print:p-2 avoid-break">
+                  <span className="text-sm text-gray-700 print:text-xs">Reported indigenous confirmed cases</span>
+                  <span className="font-semibold text-indigo-600 print:text-xs">{dataProcessingService.formatNumber(data.cases.reportedIndigenousConfirmedCases)}</span>
+                </div>
+              )}
+              
+              {/* If param_EPI_DISPLAY=1 OR 2, show the three confirmed cases breakdowns */}
+              {(data.cases.paramEpiDisplay === 1 || data.cases.paramEpiDisplay === 2) && (
+                <>
+                  <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg print:p-2 avoid-break">
+                    <span className="text-sm text-gray-700 print:text-xs">
+                      Confirmed cases from public sector (health facility){data.cases.footnoteText ? '*' : ''}
+                    </span>
+                    <span className="font-semibold text-blue-600 print:text-xs">{dataProcessingService.formatNumber(data.cases.confirmedHealthFacility)}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg print:p-2 avoid-break">
+                    <span className="text-sm text-gray-700 print:text-xs">Confirmed cases at community level</span>
+                    <span className="font-semibold text-green-600 print:text-xs">{dataProcessingService.formatNumber(data.cases.confirmedCommunity)}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg print:p-2 avoid-break">
+                    <span className="text-sm text-gray-700 print:text-xs">Confirmed cases from private sector</span>
+                    <span className="font-semibold text-purple-600 print:text-xs">{dataProcessingService.formatNumber(data.cases.confirmedPrivateSector)}</span>
+                  </div>
+                </>
+              )}
+              
+              {/* Deaths section */}
+              {data.cases.paramEpiDisplay === 1 && (
+                <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg print:p-2 avoid-break">
+                  <span className="text-sm text-gray-700 print:text-xs">Reported deaths</span>
+                  <span className="font-semibold text-red-600 print:text-xs">{dataProcessingService.formatNumber(data.cases.reportedDeaths)}</span>
+                </div>
+              )}
+              
+              {(data.cases.paramEpiDisplay === 2 || data.cases.paramEpiDisplay === 3) && (
                 <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg print:p-2 avoid-break">
                   <span className="text-sm text-gray-700 print:text-xs">Indigenous deaths</span>
                   <span className="font-semibold text-red-600 print:text-xs">{dataProcessingService.formatNumber(data.cases.indigenousDeaths)}</span>
                 </div>
-              </div>
-            ) : (
-              <div className="space-y-3 print:space-y-2">
-                <div className="flex justify-between items-center p-3 bg-orange-50 rounded-lg print:p-2 avoid-break">
-                  <span className="text-sm text-gray-700 print:text-xs">Total cases (presumed + confirmed)</span>
-                  <span className="font-semibold text-orange-600 print:text-xs">{dataProcessingService.formatNumber(data.cases.totalCases)}</span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg print:p-2 avoid-break">
-                  <span className="text-sm text-gray-700 print:text-xs">Reported confirmed cases (health facility)</span>
-                  <span className="font-semibold text-blue-600 print:text-xs">{dataProcessingService.formatNumber(data.cases.confirmedHealthFacility)}</span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg print:p-2 avoid-break">
-                  <span className="text-sm text-gray-700 print:text-xs">Confirmed cases at community level</span>
-                  <span className="font-semibold text-green-600 print:text-xs">{dataProcessingService.formatNumber(data.cases.confirmedCommunity)}</span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg print:p-2 avoid-break">
-                  <span className="text-sm text-gray-700 print:text-xs">Confirmed cases from private sector</span>
-                  <span className="font-semibold text-purple-600 print:text-xs">{dataProcessingService.formatNumber(data.cases.confirmedPrivateSector)}</span>
-                </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* Estimates - conditionally shown */}
@@ -695,17 +902,24 @@ export function CountryProfile({ country, period }: CountryProfileProps) {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 avoid-break">
-                    {data.resistanceStatus.map((resistance, index) => (
-                      <tr key={index} className="avoid-break">
-                        <td className="py-2 px-2 text-gray-700 print:py-1 print:px-1">{resistance.insecticideClass}</td>
-                        <td className="py-2 px-2 text-center font-medium print:py-1 print:px-1">{resistance.years}</td>
-                        <td className="py-2 px-2 text-center font-medium print:py-1 print:px-1">{resistance.sitesPct !== null ? resistance.sitesPct : '-'}</td>
-                        <td className="py-2 px-2 text-center font-medium print:py-1 print:px-1">{resistance.vectors}</td>
-                        <td className="py-2 px-2 text-center font-medium print:py-1 print:px-1">{resistance.used}</td>
-                      </tr>
-                    ))}
+                    {data.resistanceStatus
+                      .filter(resistance => resistance.insecticideClass && resistance.insecticideClass !== '-' && resistance.insecticideClass.trim() !== '')
+                      .map((resistance, index) => (
+                        <tr key={index} className="avoid-break">
+                          <td className="py-2 px-2 text-gray-700 print:py-1 print:px-1">{resistance.insecticideClass}</td>
+                          <td className="py-2 px-2 text-center font-medium print:py-1 print:px-1">{resistance.years}</td>
+                          <td className="py-2 px-2 text-center font-medium print:py-1 print:px-1">{resistance.sites !== null ? resistance.sites : '-'}</td>
+                          <td className="py-2 px-2 text-center font-medium print:py-1 print:px-1">{resistance.vectors}</td>
+                          <td className="py-2 px-2 text-center font-medium print:py-1 print:px-1">{resistance.used !== null ? (resistance.used ? 'Yes' : 'No') : '-'}</td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
+              </div>
+              <div className="mt-3 text-xs text-gray-600 print:text-[9px] print:mt-2 space-y-1">
+                <p><sup>1</sup> Percent of sites for which resistance is confirmed and total number of sites that reported data</p>
+                <p><sup>2</sup> Vectors reported to exhibit resistance to insecticide class</p>
+                <p><sup>3</sup> Class reported as used for malaria control in 2023 (note: if data were not available, data from the previous year were used)</p>
               </div>
             </div>
           </div>
@@ -732,7 +946,7 @@ export function CountryProfile({ country, period }: CountryProfileProps) {
                   orgUnit={country.id}
                   period={period}
                   showEstimates={data.showEstimates}
-                  indigSource={data.cases.isIndigCountry ? 1 : 0}
+                  paramEpiDisplay={data.cases.paramEpiDisplay}
                   showEstForIndigCountry={data.showEstForIndigCountry}
                 />
               </div>
